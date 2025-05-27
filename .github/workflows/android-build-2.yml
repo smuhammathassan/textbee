@@ -28,14 +28,19 @@ jobs:
           NEW_URL="http://144.172.92.232:3001/api/v1/"
           ESCAPED_NEW_URL=$(printf '%s\n' "$NEW_URL" | sed -e 's/[\/&]/\\&/g')
           sed -i "s|public static final String API_BASE_URL = \".*\";|public static final String API_BASE_URL = \"$ESCAPED_NEW_URL\";|" "$FILE_PATH"
+          echo "✅ Updated API_BASE_URL:"
           grep 'API_BASE_URL' "$FILE_PATH"
 
-      - name: Build with Gradle (Debug APK)
+      - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --info
+
+      - name: List APKs
+        run: ls -alh android/app/build/outputs/apk/debug || echo "APK folder not found"
 
       - name: Upload Debug APK
+        if: success()
         uses: actions/upload-artifact@v3
         with:
           name: textbee-debug-apk
